@@ -10,7 +10,7 @@ from control_gastos import (
     convertir_monto,
 )
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 
 app = Flask(__name__)
 gastos_registrados: list[Gasto] = []
