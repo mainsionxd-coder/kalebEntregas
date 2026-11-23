@@ -61,10 +61,14 @@ class TestAplicacionWeb(unittest.TestCase):
             data={"descripcion": "Almuerzo", "monto": "25.50", "categoria": "Comida"},
         )
 
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(respuesta.headers["Location"], "/?mensaje=Gasto+registrado+correctamente.")
+        respuesta = self.client.get(respuesta.headers["Location"])
         self.assertEqual(respuesta.status_code, 200)
         self.assertIn(b"Almuerzo", respuesta.data)
         self.assertIn(b"$25.50", respuesta.data)
         self.assertIn(b">1<", respuesta.data)
+        self.assertIn(b"Gasto registrado correctamente.", respuesta.data)
 
     def test_post_invalido_muestra_error_sin_guardar(self):
         for monto in ("texto", "0", "-1"):
@@ -78,16 +82,24 @@ class TestAplicacionWeb(unittest.TestCase):
                 self.assertIn(b"El monto", respuesta.data)
 
     def test_limpiar_vacia_la_lista_de_gastos(self):
-        self.client.post(
+        registro = self.client.post(
             "/",
             data={"descripcion": "Taxi", "monto": "12", "categoria": "Transporte"},
         )
+        self.assertEqual(registro.status_code, 302)
 
         respuesta = self.client.post("/limpiar")
 
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(
+            respuesta.headers["Location"],
+            "/?mensaje=Lista+de+gastos+reiniciada.",
+        )
+        respuesta = self.client.get(respuesta.headers["Location"])
         self.assertEqual(respuesta.status_code, 200)
         self.assertIn(b"No hay gastos registrados.", respuesta.data)
         self.assertIn(b">0<", respuesta.data)
+        self.assertIn(b"Lista de gastos reiniciada.", respuesta.data)
 
     def test_health_devuelve_estado_y_contador(self):
         respuesta = self.client.get("/health")

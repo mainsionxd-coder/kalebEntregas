@@ -1,6 +1,6 @@
 """Aplicación web de control de gastos personales."""
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 from control_gastos import (
     CATEGORIAS,
@@ -34,6 +34,7 @@ def index():
     descripcion = ""
     monto = ""
     status_code = 200
+    mensaje = request.args.get("mensaje")
 
     if request.method == "POST":
         descripcion = request.form.get("descripcion", "")
@@ -47,6 +48,9 @@ def index():
                 descripcion,
                 monto_decimal,
                 categoria,
+            )
+            return redirect(
+                url_for("index", mensaje="Gasto registrado correctamente.")
             )
         except ValueError as error_detectado:
             error = str(error_detectado)
@@ -63,6 +67,7 @@ def index():
             error=error,
             descripcion=descripcion,
             monto=monto,
+            mensaje=mensaje,
         ),
         status_code,
     )
@@ -71,17 +76,8 @@ def index():
 @app.route("/limpiar", methods=["POST"])
 def limpiar():
     gastos_registrados.clear()
-    return render_template(
-        "index.html",
-        version=APP_VERSION,
-        gastos=gastos_registrados,
-        gastos_count=len(gastos_registrados),
-        total=calcular_total(gastos_registrados),
-        categorias=CATEGORIAS,
-        error=None,
-        descripcion="",
-        monto="",
-        mensaje="Lista de gastos reiniciada.",
+    return redirect(
+        url_for("index", mensaje="Lista de gastos reiniciada.")
     )
 
 

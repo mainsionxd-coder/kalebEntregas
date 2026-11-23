@@ -1,4 +1,4 @@
-"""Prueba local de carga sobre el endpoint /health."""
+"""Prueba de carga sobre el endpoint /health de la app local o desplegada."""
 
 import concurrent.futures
 import sys

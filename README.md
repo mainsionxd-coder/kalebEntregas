@@ -56,7 +56,7 @@ La aplicación web permite:
 - Ver la lista de gastos en una tabla
 - Consultar el contador y el total acumulado
 - Reiniciar rápidamente la lista con el botón `Limpiar lista`
-- Los gastos web viven únicamente en memoria
+- Los gastos web viven únicamente en memoria y se pierden al reiniciar el proceso
 
 También está disponible el monitoreo básico:
 
@@ -95,10 +95,10 @@ Con el servidor ejecutándose en otra terminal:
 python performance_test.py
 ```
 
-Para probar una URL desplegada:
+Para probar la aplicación desplegada:
 
 ```bash
-python performance_test.py https://tu-servicio.onrender.com/health
+python performance_test.py https://kalebentregas-production.up.railway.app/health
 ```
 
 El script ejecuta 50 solicitudes concurrentes y muestra los tiempos promedio, mínimo y máximo.
@@ -107,9 +107,15 @@ El script ejecuta 50 solicitudes concurrentes y muestra los tiempos promedio, m�
 
 El flujo de GitHub Actions está en `.github/workflows/ci.yml`. Se ejecuta en cada `push` y en cada `pull_request`; prepara Python 3.12, instala `requirements.txt` y corre las pruebas de `unittest`. Un resultado exitoso significa que todas las pruebas terminaron sin errores.
 
-## Despliegue en Render
+## Despliegue en Railway
 
-Crea un servicio web desde el repositorio y configura el comando de compilación como `pip install -r requirements.txt` y el comando de inicio como `gunicorn app:app`. La versión web usa memoria; al reiniciar el servicio, la lista se vacía. Para persistencia permanente se debe integrar posteriormente almacenamiento persistente o una base de datos.
+La aplicación está publicada en [kalebentregas-production.up.railway.app](https://kalebentregas-production.up.railway.app). El servicio se conecta al repositorio de GitHub para desplegar actualizaciones. El comando de inicio configurado es:
+
+```bash
+gunicorn app:app --bind 0.0.0.0:$PORT
+```
+
+El endpoint de disponibilidad es [`/health`](https://kalebentregas-production.up.railway.app/health). La versión web almacena los gastos únicamente en memoria; al reiniciar el proceso, la lista se vacía. La aplicación es una demostración académica: no debe usarse para guardar datos financieros privados. Para persistencia entre reinicios hace falta integrar una base de datos o almacenamiento persistente.
 
 ## Git y GitHub
 
