@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Control sencillo de gastos personales">
+    <title>Control de gastos personales</title>
+    <style>
+        :root {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #172033;
+            background: #f3f5f9;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        main { width: min(100% - 2rem, 780px); margin: 3rem auto; }
+        header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        h1 { margin: 0; font-size: clamp(1.55rem, 5vw, 2.2rem); }
+        h2 { margin-top: 0; font-size: 1.1rem; }
+        .badge { padding: .4rem .65rem; border-radius: 999px; background: #e5ebf7; color: #314d86; font-weight: 700; }
+        .card { margin-top: 1.25rem; padding: 1.25rem; border: 1px solid #dde3ec; border-radius: 12px; background: #fff; }
+        form { display: grid; gap: .9rem; }
+        label { display: grid; gap: .35rem; font-weight: 650; font-size: .92rem; }
+        input, select, button { width: 100%; min-height: 2.65rem; border: 1px solid #bcc6d5; border-radius: 8px; padding: .55rem .7rem; font: inherit; }
+        button { border: 0; background: #3158a8; color: #fff; font-weight: 700; cursor: pointer; }
+        button:hover { background: #24468c; }
+        .alert { margin-top: 1rem; padding: .8rem 1rem; border-radius: 8px; }
+        .error { background: #ffeded; color: #7d2828; border: 1px solid #efbcbc; }
+        .success { background: #eaf7ee; color: #215a38; border: 1px solid #b7dfc3; }
+        .summary { display: grid; grid-template-columns repeat(2, minmax(0, 1fr)); gap: .75rem; }
+        .metric { padding: .85rem; border-radius: 8px; background: #f5f7fb; }
+        .metric strong { display: block; margin-top: .25rem; font-size: 1.35rem; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: .75rem .45rem; border-bottom: 1px solid #e7ebf2; text-align: left; }
+        th { color: #59667b; font-size: .82rem; }
+        td:last-child, th:last-child { text-align: right; }
+        .clear { margin-top: 1rem; background: #8a3030; }
+        .clear:hover { background: #702626; }
+        .empty { color: #68758a; text-align: center; }
+
+        @media (max-width: 540px) {
+            main { margin: 1.5rem auto; }
+            header { align-items: flex-start; }
+            .summary { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <h1>Control de gastos personales</h1>
+        <span class="badge">v{{ version }}</span>
+    </header>
+
+    {% if error %}
+    <div class="alert error" role="alert">{{ error }}</div>
+    {% endif %}
+    {% if mensaje %}
+    <div class="alert success" role="status">{{ mensaje }}</div>
+    {% endif %}
+
+    <section class="card" aria-labelledby="form-title">
+        <h2 id="form-title">Registrar gasto</h2>
+        <form action="{{ url_for('index') }}" method="post">
+            <label>
+                Descripción
+                <input name="descripcion" type="text" value="{{ descripcion }}" required>
+            </label>
+            <label>
+                Monto
+                <input name="monto" type="text" inputmode="decimal" value="{{ monto }}" required>
+            </label>
+            <label>
+                Categoría
+                <select name="categoria">
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}">{{ categoria }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit">Agregar gasto</button>
+        </form>
+    </section>
+
+    <section class="card" aria-labelledby="expenses-title">
+        <h2 id="expenses-title">Resumen</h2>
+        <div class="summary">
+            <div class="metric">Gastos registrados<strong>{{ gastos_count }}</strong></div>
+            <div class="metric">Total acumulado<strong>${{ total }}</strong></div>
+        </div>
+
+        {% if gastos %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th>Monto</th></tr>
+                </thead>
+                <tbody>
+                    {% for gasto in gastos %}
+                    <tr>
+                        <td>{{ gasto.fecha }}</td>
+                        <td>{{ gasto.descripcion }}</td>
+                        <td>{{ gasto.categoria }}</td>
+                        <td>${{ gasto.monto }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty">No hay gastos registrados.</p>
+        {% endif %}
+
+        <form action="{{ url_for('limpiar') }}" method="post">
+            <button class="clear" type="submit">Limpiar lista</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>
